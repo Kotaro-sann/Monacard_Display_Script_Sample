@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="utf-8">
+  <title>Monacard Display Script Sample</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      margin: 0;
+      padding: 10px;
+    }
+
+    #container img {
+      width: 20%;
+      height: auto;
+      margin: 5px;
+    }
+
+    #container div.element_div {
+      border: 1px solid #000;
+      margin: 10px;
+      padding: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <div>
+      <div>
+        <p><a href="https://adventar.org/calendars/8922" target="_blank" rel="noopener noreferrer">『Monacard(モナカード)
+            Advent Calendar 2023』</a>用に作成しました。</p>
+        <p>モナカードのAPIを用いてモナカードを表示させるサンプルコードです。</p>
+      </div>
+      <div style="font-style: italic;">
+        <p>Created for <a href="https://adventar.org/calendars/8922" target="_blank" rel="noopener noreferrer">"Monacard
+            Advent Calendar 2023"</a></p>
+        <p>This is sample code to display Monacard using Monacard API.</p>
+      </div>
+    </div>
+    <div>
+      <input id="inputField" type="text" name="address" placeholder="ENTER ADDRESS"></input>
+      <button onclick="reqMonacardInfo()">Monacard Request</button>
+    </div>
+    <div id="container"></div>
+  </div>
+
+  <script>
+
+    const monacardInfo = [];
+
+    async function reqMonacardInfo() {
+
+      const assetTotalList = [];
+
+      if (assetTotalList.length > 0) return;
+
+      const userAddress = document.getElementById("inputField").value;
+      const assetsBalances = await getAssetBalance(userAddress);
+      if (assetsBalances === undefined) return;
+      if (assetsBalances.length === 0) return;
+      const joinedAssetList = getJoinedMonacardList(assetsBalances);
+      const monacardList = await getMonacardInfoMany(joinedAssetList);
+
+      for (let i = 0; i < monacardList.length; i++) {
+
+        for (let ii = 0; ii < monacardList[i].length; ii++) {
+
+          setMonacardInfo(monacardList[i][ii]);
+
+        }
+      }
+
+      const container = document.getElementById("container");
+      const URL_BASE = "https://mcspare.nachatdayo.com/image_server/img/";
+
+      for (let i in monacardInfo) {
+
+        let cardLink;
+
+        if (monacardInfo[i].imgur_url.slice(-3) === "png") {
+          cardLink = URL_BASE + monacardInfo[i].cid + "l";
+        } else if (monacardInfo[i].imgur_url.slice(-3) === "jpg") {
+          cardLink = URL_BASE + monacardInfo[i].cid + "l";
+        } else {
+          cardLink = URL_BASE + monacardInfo[i].cid;
+        }
+
+        const element_div = document.createElement("div");
+        element_div.className = "element_div";
+
+        const element_1 = document.createElement("div");
+        const element_2 = document.createElement("div");
+        const element_3 = document.createElement("div");
+        const element_4 = document.createElement("div");
+        const element_5 = document.createElement("div");
+        const element_6 = document.createElement("div");
+        const element_7 = document.createElement("div");
+        const element_8 = document.createElement("div");
+        const element_9 = document.createElement("div");
+        const element_10 = document.createElement("div");
+        const element_11 = document.createElement("div");
+        const element_12 = document.createElement("div");
+        const element_13 = document.createElement("div");
+        const element_14 = document.createElement("div");
+
+        element_1.textContent = "Asset Name: " + monacardInfo[i].assetName;
+        element_2.textContent = "AssetGroup: " + monacardInfo[i].assetgroup;
+        element_3.textContent = "Card Name: " + monacardInfo[i].card_name;
+        element_4.textContent = "Owner Name: " + monacardInfo[i].owner_name;
+        element_5.textContent = "Imgur URL: " + monacardInfo[i].imgur_url;
+        element_6.textContent = "Add Description: " + monacardInfo[i].add_description;
+        element_7.textContent = "TW ID: " + monacardInfo[i].tw_id;
+        element_8.textContent = "TW Name: " + monacardInfo[i].tw_name;
+        element_9.textContent = "Tag: " + monacardInfo[i].tag;
+        element_10.textContent = "CID: " + monacardInfo[i].cid;
+        element_11.textContent = "Ver: " + monacardInfo[i].ver;
+        element_12.textContent = "Is Good Status: " + monacardInfo[i].is_good_status;
+        element_13.textContent = "Regist Time: " + monacardInfo[i].regist_time;
+        element_14.textContent = "Update Time: " + monacardInfo[i].update_time;
+
+        const imgElement = document.createElement("img");
+        imgElement.src = cardLink;
+        imgElement.alt = monacardInfo[i].card_name;
+
+        element_div.appendChild(imgElement);
+        element_div.appendChild(element_1);
+        element_div.appendChild(element_2);
+        element_div.appendChild(element_3);
+        element_div.appendChild(element_4);
+        element_div.appendChild(element_5);
+        element_div.appendChild(element_6);
+        element_div.appendChild(element_7);
+        element_div.appendChild(element_8);
+        element_div.appendChild(element_9);
+        element_div.appendChild(element_10);
+        element_div.appendChild(element_11);
+        element_div.appendChild(element_12);
+        element_div.appendChild(element_13);
+        element_div.appendChild(element_14);
+
+        container.appendChild(element_div);
+
+      }
+    }
+
+    // Balance Info Electrum
+    async function getAssetBalance(address) {
+      const data = {
+        "jsonrpc": "2.0",
+        "id": 0,
+        "method": "get_normalized_balances",
+        "params": {
+          "addresses": [address]
+        }
+      }
+      const result = fetch("https://monapa.electrum-mona.org/_api", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      })
+        .then(response => response.json())
+        .then((r) => {
+          return r.result;
+        })
+        .catch((error) => { console.log(error.message) });
+
+      return result;
+    }
+
+    function getJoinedMonacardList(assetBalance) {
+      const joinedMonacardNameList = [];
+      let joinedMonacardName1;
+      let joinedMonacardName2;
+      let joinedMonacardName3;
+
+      for (let i = 0; i < assetBalance.length; i++) {
+        // Monacard 用に asset or assetlongname を取得
+        let assetName = "";
+        // トークンが FT の場合
+        if (assetBalance[i].asset_longname === null) {
+          assetName = assetBalance[i].asset;
+        } else {
+          assetName = assetBalance[i].asset_longname;
+        }
+
+        if (i < 250) {
+          i === 0 ?
+            joinedMonacardName1 = assetName :
+            joinedMonacardName1 = joinedMonacardName1.concat(",", assetName);
+        } else if (250 <= i && i < 500) {
+          i === 250 ?
+            joinedMonacardName2 = assetName :
+            joinedMonacardName2 = joinedMonacardName2.concat(",", assetName);
+        } else if (500 <= i && i < 750) {
+          i === 500 ?
+            joinedMonacardName3 = assetName :
+            joinedMonacardName3 = joinedMonacardName3.concat(",", assetName);
+        }
+      }
+      joinedMonacardNameList.push(joinedMonacardName1);
+      joinedMonacardNameList.push(joinedMonacardName2);
+      joinedMonacardNameList.push(joinedMonacardName3);
+
+      return joinedMonacardNameList;
+    }
+
+    // Monacard Info Many
+    async function getMonacardInfoMany(joinedAssetList) {
+      let monacardList = [];
+      let result;
+
+      for (let i = 0; i < joinedAssetList.length; i++) {
+        if (joinedAssetList[i] === undefined) break;
+        await getMonacardInfo(joinedAssetList[i])
+          .then((r) => { monacardList[i] = r })
+          .then(() => { result = monacardList });
+      }
+
+      return result;
+    }
+
+    // Monacard Info
+    async function getMonacardInfo(assetName) {
+      const result = await fetch("https://card.mona.jp/api/card_detail.php?assets=" + assetName, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      })
+        .then(response => response.json())
+        .then((r) => {
+          return r.details;
+        })
+        .catch((error) => { console.log(error.message) });
+
+      return result;
+    }
+
+    function setMonacardInfo(monacardList) {
+      monacardInfo.push(
+        {
+          assetName: monacardList.asset_longname === null ? monacardList.asset_common_name : monacardList.asset_longname,
+          assetgroup: monacardList.assetgroup,
+          card_name: unescapeProcess(monacardList.card_name),
+          owner_name: unescapeProcess(monacardList.owner_name),
+          imgur_url: unescapeProcess(monacardList.imgur_url),
+          add_description: unescapeProcess(monacardList.add_description),
+          tw_id: unescapeProcess(monacardList.tw_id),
+          tw_name: unescapeProcess(monacardList.tw_name),
+          tag: unescapeProcess(monacardList.tag),
+          cid: monacardList.cid,
+          ver: monacardList.ver,
+          is_good_status: monacardList.asseis_good_statustgroup,
+          regist_time: monacardList.regist_time,
+          update_time: monacardList.update_time,
+        }
+      );
+    }
+
+    function unescapeProcess(targetText) {
+      let result = targetText;
+      result = result.replace(/&amp;/g, "&");
+      result = result.replace(/&quot;/g, "\"");
+      result = result.replace(/&#039;/g, "\"");
+      result = result.replace(/&lt;/g, "<");
+      result = result.replace(/&gt;/g, ">");
+      return result
+    }
+
+  </script>
+
+</body>
+
+</html>
